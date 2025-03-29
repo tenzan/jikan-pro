@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  timezone      String    @default("UTC")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  eventTypes    EventType[]
+  availability  Availability[]
+  bookings      Booking[]      @relation("UserBookings")
+  bookedEvents  Booking[]      @relation("BookedEvents")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model EventType {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  duration    Int      // in minutes
+  slug        String
+  color       String   @default("#3E88F6")
+  active      Boolean  @default(true)
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Availability {
+  id         String   @id @default(cuid())
+  userId     String
+  dayOfWeek  Int      // 0-6, where 0 is Sunday
+  startTime  String   // format: "HH:MM"
+  endTime    String   // format: "HH:MM"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id           String   @id @default(cuid())
+  eventTypeId  String
+  userId       String   // The user who owns the event type
+  inviteeId    String?  // The user who booked the event (if registered)
+  inviteeName  String
+  inviteeEmail String
+  startTime    DateTime
+  endTime      DateTime
+  timezone     String
+  status       String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  location     String?  // can be a URL, address, or phone number
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  eventType   EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  user        User      @relation("UserBookings", fields: [userId], references: [id], onDelete: Cascade)
+  invitee     User?     @relation("BookedEvents", fields: [inviteeId], references: [id])
+  notifications Notification[]
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  bookingId  String
+  type       String   // CONFIRMATION, REMINDER, CANCELLATION
+  sentAt     DateTime?
+  status     String   @default("PENDING") // PENDING, SENT, FAILED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
