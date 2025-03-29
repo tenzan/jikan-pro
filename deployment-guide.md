@@ -1,13 +1,13 @@
-# Deploying Your Calendly Clone
+# Deploying Your Jikan Pro
 
-This guide provides instructions for deploying your Calendly clone to Vercel and setting up your GitHub repository.
+This guide provides instructions for deploying your Jikan Pro to Vercel and setting up your GitHub repository.
 
 ## GitHub Repository Setup
 
 1. **Create a new repository on GitHub**:
    - Go to github.com and log in to your account
    - Click on the "+" icon in the top right corner and select "New repository"
-   - Name your repository (e.g., "calendly-clone")
+   - Name your repository (e.g., "jikan-pro")
    - Choose whether to make it public or private
    - Don't initialize with a README, .gitignore, or license
    - Click "Create repository"
@@ -21,7 +21,7 @@ This guide provides instructions for deploying your Calendly clone to Vercel and
    ```bash
    git init
    git add .
-   git commit -m "Initial commit of Calendly clone"
+   git commit -m "Initial commit of Jikan Pro"
    git branch -M main
    git remote add origin https://github.com/YOUR_USERNAME/REPO_NAME.git
    git push -u origin main
